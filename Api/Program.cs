@@ -15,6 +15,7 @@ builder.Services.AddDbContext<SecurityContext>(options =>
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();
 builder.Services.AddApplicationServices();
+builder.Services.AddJwt(builder.Configuration);
 
 var app = builder.Build();
 
@@ -39,5 +40,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.Run();
