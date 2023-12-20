@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.ConfigureApiVersioning();
+builder.Services.ConfigureCors();
 
 var app = builder.Build();
 
@@ -45,5 +46,7 @@ app.MapControllers();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseCors("CorsPolicy");
 
 app.Run();
