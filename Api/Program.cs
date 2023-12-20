@@ -1,6 +1,7 @@
 using System.Reflection;
 using Api.Extensions;
 using Api.Helpers;
+using AspNetCoreRateLimit;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Data;
 
@@ -18,6 +19,7 @@ builder.Services.AddApplicationServices();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.ConfigureApiVersioning();
 builder.Services.ConfigureCors();
+builder.Services.ConfigureRatelimiting();
 
 var app = builder.Build();
 
@@ -48,5 +50,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors("CorsPolicy");
+
+app.UseIpRateLimiting();
 
 app.Run();
