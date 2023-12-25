@@ -73,4 +73,8 @@ app.UseCors("CorsPolicy");
 
 app.UseIpRateLimiting();
 
+app.UseDefaultFiles();
+
+app.UseStaticFiles();
+
 app.Run();
