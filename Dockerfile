@@ -20,6 +20,11 @@ RUN dotnet publish --no-restore -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.0-bookworm-slim-amd64
 WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+    
 COPY --from=publish /app .
 
 ENTRYPOINT ["dotnet"]
