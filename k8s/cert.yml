@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev-example-tls
+  namespace: istio-system
+spec:
+  isCA: true
+  secretName: dev-example-tls
+  commonName: dev.example.local
+  privateKey:
+    algorithm: ECDSA
+    size: 384
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - ACME Inc.
+    organizationalUnits:
+      - jarvisbot01 Division
+  dnsNames:
+    - dev.example.local

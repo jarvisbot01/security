@@ -16,7 +16,7 @@ COPY Persistence/ Persistence/
 
 FROM build AS publish
 WORKDIR /source/Api
-RUN dotnet publish --no-restore -o /app
+RUN dotnet publish -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.13-bookworm-slim-amd64
 WORKDIR /app
