@@ -24,7 +24,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get upgrade -qq --no-install-recommends --no-install-suggests -yy && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-    
+
 COPY --from=publish /app .
 
 ENTRYPOINT ["dotnet"]
