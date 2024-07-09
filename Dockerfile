@@ -1,4 +1,4 @@
-ARG VARIANT=8.0.401-bookworm-slim-amd64
+ARG VARIANT=8.0.404-bookworm-slim-amd64
 FROM mcr.microsoft.com/dotnet/sdk:${VARIANT} AS build
 WORKDIR /source
 EXPOSE 8080
@@ -16,12 +16,12 @@ COPY Persistence/ Persistence/
 
 FROM build AS publish
 WORKDIR /source/Api
-RUN dotnet publish --no-restore -o /app
+RUN dotnet publish -o /app
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.8-bookworm-slim-amd64
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.11-bookworm-slim-amd64
 WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get upgrade -y \
+RUN apt-get update && apt-get upgrade -qq -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
     

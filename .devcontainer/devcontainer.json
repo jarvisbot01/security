@@ -15,7 +15,15 @@
             "version": "latest",
             "ppa": "false"
         },
-        "ghcr.io/devcontainers/features/docker-in-docker:2": { }
+        "ghcr.io/devcontainers/features/docker-in-docker:2": { 
+            "version": "latest",
+			"disableIp6tables": "true"
+		},
+        "ghcr.io/devcontainers-contrib/features/kind:1": {},
+		"ghcr.io/devcontainers/features/aws-cli:1": {
+			"version": "latest"
+		},
+		"ghcr.io/CASL0/devcontainer-features/eksctl:1": {}	
     },
 	"customizations": {
 		"vscode": {
@@ -47,6 +55,6 @@
 	},
 	"remoteUser": "vscode",
 	"postCreateCommand": {
-		"command": "sudo dotnet workload update && dotnet tool install --global dotnet-ef && dotnet tool install --global csharpier"
+		"command": "sudo dotnet workload update --source https://api.nuget.org/v3/index.json && dotnet tool install --global dotnet-ef && dotnet tool install --global csharpier"
 	}
 }
