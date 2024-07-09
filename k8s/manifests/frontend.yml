@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mi-apache
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mi-apache-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: mi-apache-app
+        version: v1
+    spec:
+      containers:
+        - name: mi-contenedor-apache
+          image: httpd:2.4.62-bookworm
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mi-servicio-apache
+  namespace: default
+spec:
+  selector:
+    app: mi-apache-app
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 80
+      nodePort: 30009
+  type: NodePort
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: mi-servicio-destination-apache
+  namespace: default
+spec:
+  host: mi-servicio-apache.default.svc.cluster.local
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: my-virtualservice-apache
+  namespace: default
+spec:
+  hosts:
+    - "frontend.josedaniel.live"
+  gateways:
+    - istio-system/internal-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+          port: 443
+      route:
+        - destination:
+            host: mi-servicio-apache.default.svc.cluster.local
+            subset: v1
+            port:
+              number: 8090
+---
