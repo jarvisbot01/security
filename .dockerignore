@@ -1,0 +1,8 @@
+# Ignorar todo por defecto
+**
+
+# Incluir únicamente las carpetas necesarias
+!Api/
+!Application/
+!Domain/
+!Persistence/
