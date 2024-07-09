@@ -15,7 +15,10 @@
             "version": "latest",
             "ppa": "false"
         },
-        "ghcr.io/devcontainers/features/docker-in-docker:2": { }
+        "ghcr.io/devcontainers/features/docker-in-docker:2": { 
+            "version": "26" // Use the latest version of KIND that is compatible with GitHub Codespaces (https://github.com/kubernetes-sigs/kind/issues/3696)
+		},
+        "ghcr.io/devcontainers-contrib/features/kind:1": {} 
     },
 	"customizations": {
 		"vscode": {

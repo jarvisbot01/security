@@ -1,0 +1,40 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    base:
+      enabled: true
+    egressGateways:
+    - enabled: false
+      name: istio-egressgateway
+    ingressGateways:
+    - enabled: true
+      name: istio-ingressgateway
+      k8s:
+        service:
+          ports:
+          - name: status-port
+            port: 15021
+            targetPort: 15021
+            protocol: TCP
+          - name: http2
+            port: 80
+            targetPort: 8080
+            protocol: TCP
+          - name: https
+            port: 443
+            targetPort: 8443
+            protocol: TCP
+    pilot:
+      enabled: true
+  hub: docker.io/istio
+  profile: default
+  tag: 1.22.3
+  values:
+    defaultRevision: ""
+    gateways:
+      istio-egressgateway: {}
+      istio-ingressgateway: {}
+    global:
+      configValidation: true
+      istioNamespace: istio-system
