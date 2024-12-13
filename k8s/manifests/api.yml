@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: mi-contenedor
-          image: ghcr.io/jarvisbot01/security:latest
+          image: ghcr.io/jarvisbot01/security:0.7.7
           ports:
             - containerPort: 8080
       imagePullSecrets:
