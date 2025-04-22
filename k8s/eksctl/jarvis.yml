@@ -1,0 +1,32 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: kube-jarvis
+  region: us-west-1
+  version: '1.31'
+
+managedNodeGroups:
+  - name: ng-al2023-jarvis
+    labels:
+      alpha.eksctl.io/cluster-name: development
+      alpha.eksctl.io/nodegroup-name: ng-al2023-jarvis
+    instanceType: m5.large
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    ssh:
+      allow: true
+      publicKeyName: kube-jarvis
+
+addons:
+  - name: kube-proxy
+    version: latest
+  - name: coredns
+    version: latest
+  - name: snapshot-controller
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+  - name: aws-mountpoint-s3-csi-driver
+    version: latest

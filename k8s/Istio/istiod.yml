@@ -1,0 +1,17 @@
+# meshConfig defines runtime configuration of components, including Istiod and istio-agent behavior
+# See https://istio.io/docs/reference/config/istio.mesh.v1alpha1/ for all available options
+meshConfig:
+  accessLogFile: /dev/stdout
+
+# configValidation enables the validation webhook for Istio configuration.
+configValidation: true
+
+global:
+  # Used to locate istiod.
+  istioNamespace: istio-system
+
+# These environment variables affect the behavior of the pilot-discovery command.
+# See https://istio.io/latest/docs/reference/commands/pilot-discovery/#envvars for all available options
+env:
+  # PILOT_ENABLE_QUIC_LISTENERS enables QUIC listeners in Pilot.
+  PILOT_ENABLE_QUIC_LISTENERS: "true"

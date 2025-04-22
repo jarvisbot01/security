@@ -4,14 +4,53 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write # Required for creating the GitHub release
+      packages: write # Required for pushing to GitHub Container Registry
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+      actions: read
+      security-events: write
+
     steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@main
+        with:
+          access_token: ${{ secrets.GIT_TOKEN }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ./security.sln
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy_results.sarif'
+          severity: 'CRITICAL'
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy_results.sarif
+          category: "Trivy Security Scans for .NET"
 
       - name: Docker meta
         id: metadata
@@ -68,6 +107,20 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max,compression=zstd
 
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: "${{ fromJSON(steps.metadata.outputs.json).tags[0] }}@${{ steps.build.outputs.digest }}"
+          format: 'sarif'
+          output: 'trivy_docker_results.sarif'
+          severity: 'CRITICAL'
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy_docker_results.sarif
+          category: "Trivy Security Scans for Docker Images"
+
       # Temp fix
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
@@ -92,3 +145,53 @@ jobs:
           -H "Content-Type: application/json" \
           -H "X-Hub-Signature: sha1=$HMAC" \
           -d '{"ref":"refs/heads/main"}'
+
+      - name: Set up Flux CLI
+        uses: fluxcd/flux2/action@main
+        with:
+          version: "latest"
+          token: ${{ secrets.GIT_TOKEN }}
+
+      - name: Version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]
+          then
+            tag=${GITHUB_REF##refs/tags/}
+            v=${tag##v}
+            echo "VERSION=$v" >> $GITHUB_ENV
+          else
+            v=$GITHUB_SHA
+            echo "VERSION=$v" >> $GITHUB_ENV
+          fi
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.6.0
+
+      - name: Push manifests and sign artifacts
+        run: |
+          IMAGE_REF=$(flux push artifact \
+          oci://ghcr.io/${{ github.repository_owner }}/security-manifests:${{ env.VERSION }} \
+          --path=k8s/manifests \
+          --source=${{ github.repositoryUrl }} \
+          --revision="${{ github.ref_name }}@sha1:${{ github.sha }}" \
+          --annotations="org.opencontainers.image.description=Security API install manifests for flux" \
+          --output json | \
+          jq -r '. | .repository + "@" + .digest')
+
+          flux tag artifact oci://ghcr.io/${{ github.repository_owner }}/security-manifests:${{ env.VERSION }} --tag latest
+
+          echo "Firmando imagen: ${IMAGE_REF}"
+          cosign sign --yes "${IMAGE_REF}"
+          echo "✅ Imagen firmada exitosamente: ${IMAGE_REF}"
+
+      - name: Sign docker digest images
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.metadata.outputs.tags }}
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes ${images}

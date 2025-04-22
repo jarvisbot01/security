@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev-example-tls
+  namespace: istio-system
+spec:
+  secretName: dev-example-tls
+  commonName: "*.josedaniel.live"
+  privateKey:
+    rotationPolicy: Always
+    algorithm: ECDSA
+    size: 256
+    encoding: PKCS8
+  issuerRef:
+    name: cloudflare
+    kind: ClusterIssuer
+  dnsNames:
+    - "josedaniel.live"
+    - "*.josedaniel.live"

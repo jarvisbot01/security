@@ -1,0 +1,21 @@
+service:
+  ports:
+    - name: status-port
+      port: 15021
+      targetPort: 15021
+      protocol: TCP
+
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP
+
+    - name: http-quic
+      port: 443
+      targetPort: 8443
+      protocol: UDP
