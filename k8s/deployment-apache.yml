@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mi-apache
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mi-apache-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: mi-apache-app
+        version: v1
+    spec:
+      containers:
+        - name: mi-contenedor-apache
+          image: httpd:2.4.62-bookworm
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
