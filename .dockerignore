@@ -1,0 +1,7 @@
+**
+
+# Incluir únicamente las carpetas necesarias
+!Api/
+!Application/
+!Domain/
+!Persistence/
